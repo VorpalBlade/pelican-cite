@@ -1,0 +1,3 @@
+[submodule "pelican-cite"]
+	path = pelican-cite
+	url = https://github.com/cmacmackin/pelican-cite.git

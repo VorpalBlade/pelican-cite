@@ -34,46 +34,6 @@ would be replaced by "(Bai & Stone, 2011)".
 If a citation key is used which does not exist within the BibTeX file then
 a warning will be displayed.
 
-Template Example
-================
-
-You probably want to define a 'publications.html' direct template.  Don't forget
-to add it to the `DIRECT\_TEMPLATES` configuration key.  Note that we are escaping
-the BibTeX string twice in order to properly display it.  This can be achieved
-using `forceescape`.
-
-```python
-{% extends "base.html" %}
-{% block title %}Publications{% endblock %}
-{% block content %}
-
-<script type="text/javascript">
-    function disp(s) {
-        var win;
-        var doc;
-        win = window.open("", "WINDOWID");
-        doc = win.document;
-        doc.open("text/plain");
-        doc.write("<pre>" + s + "</pre>");
-        doc.close();
-    }
-</script>
-<section id="content" class="body">
-    <h1 class="entry-title">Publications</h1>
-    <ul>
-    {% for key, year, text, bibtex, pdf, slides, poster in publications %}
-    <li id="{{ key }}">{{ text }}
-    [&nbsp;<a href="javascript:disp('{{ bibtex|replace('\n', '\\n')|escape|forceescape }}');">Bibtex</a>&nbsp;]
-    {% for label, target in [('PDF', pdf), ('Slides', slides), ('Poster', poster)] %}
-    {{ "[&nbsp;<a href=\"%s\">%s</a>&nbsp;]" % (target, label) if target }}
-    {% endfor %}
-    </li>
-    {% endfor %}
-    </ul>
-</section>
-{% endblock %}
-```
-
 Attribution
 ===========
 `pelican-cite` is based on the
