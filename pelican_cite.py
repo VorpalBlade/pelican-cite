@@ -17,22 +17,28 @@ try:
     from pybtex.database.output.bibtex import Writer
     from pybtex.database import BibliographyData, PybtexError
     from pybtex.backends import html
-    from pybtex.style.formatting import plain
+    from pybtex.style.formatting import alpha
     pyb_imported = True
 except ImportError:
     pyb_imported = False
 
 from pelican import signals
+from pelican.generators import ArticlesGenerator, PagesGenerator
 
 __version__ = '0.0.1'
 
 JUMP_BACK = '<a href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
-CITE_RE = re.compile("\[@@?\s*(\w.*?)\s*\]")
+CITE_RE = re.compile("\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
 
 logger = logging.getLogger(__name__)
 global_bib = None
-style = plain.Style()
-backend = html.Backend()
+if pyb_imported:
+    style = alpha.Style()
+    backend = html.Backend()
+else:
+    style = None
+    backend = None
+
 
 def get_bib_file(article):
     """
@@ -67,58 +73,66 @@ def process_content(article):
     cite_count = {}
     replace_count = {}
     for citation in CITE_RE.findall(content):
-        if citation in cite_count:
-            cite_count[citation] = 1
-            replace_count[citation] = 1
+        if citation[1] not in cite_count:
+            cite_count[citation[1]] = 1
+            replace_count[citation[1]] = 1
         else:
-            cite_count[citation] += 1
+            cite_count[citation[1]] += 1
 
     # Get formatted entries for the appropriate bibliographic entries
-    cited = []    
+    cited = []
     for key in data.entries.keys():
         if key in cite_count: cited.append(data.entries[key])
+    if len(cited) == 0: return
     formatted_entries = style.format_entries(cited)
 
     # Get the data for the required citations and append to content
     labels = {}
-    content += '<h3>Bibliography</h3>\n'
+    content += '<hr>\n<h2>Bibliography</h2>\n'
     for formatted_entry in formatted_entries:
         key = formatted_entry.key
         ref_id = key.replace(' ','')
         label = ("<a href='#" + ref_id + "' id='#ref-" + ref_id + "-{0}'>"
                 + formatted_entry.label + "</a>")
         text = ("<p id='" + ref_id + "'>"
-               + formatted_entry.text.render(html_backend))
-        for i in range(cite_count[key]):
-            if i == 0:
-                text += JUMP_BACK.format(ref_id,1,'↩ 1')
-            else:
-                text += ', ' + JUMP_BACK.format(ref_id,i+1,i+1)
+                + formatted_entry.text.render(backend))
+#        for i in range(cite_count[key]):
+#            if i == 0:
+#                text += JUMP_BACK.format(ref_id,1,'&larrhk;  1')
+#            else:
+#                text += ', ' + JUMP_BACK.format(ref_id,i+1,i+1)
         text += '</p>'
         content += text + '\n'
         labels[key] = label
 
     # Replace citations in article/page
+    cite_count = {}
     def replace_cites(match):
-        label = match.group(1)
+        label = match.group(2)
         if label in labels:
             # TODO: Add ability to change style of label depending on @ or @@
-            return labels[label]
+            if label not in cite_count:
+                cite_count[label] = 1
+                replace_count[label] = 1
+            else:
+                cite_count[label] += 1
+            return labels[label].format(cite_count[label])
         else:
             logger.warn('No BibTeX entry found for label "{}"'.format(label))
             return match.group(0)
     
-    CITE_RE.sub(replace_cites,content)
+    content = CITE_RE.sub(replace_cites,content)
     article._content = content
     
 
 def add_citations(generators):
-    if not pyb_loaded:
+    global global_bib
+    if not pyb_imported:
         logger.warn('`pelican-cite` failed to load dependency `pybtex`')
         return
 
-    if 'PUBLICATIONS_SRC' in generator.settings:
-        refs_file = generator.settings['PUBLICATIONS_SRC']
+    if 'PUBLICATIONS_SRC' in generators[0].settings:
+        refs_file = generators[0].settings['PUBLICATIONS_SRC']
         try:
             global_bib = Parser().parse_file(refs_file)
         except PybtexError as e:
