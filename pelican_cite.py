@@ -17,28 +17,44 @@ try:
     from pybtex.database.output.bibtex import Writer
     from pybtex.database import BibliographyData, PybtexError
     from pybtex.backends import html
-    from pybtex.style.formatting import alpha
+    from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+    from pybtex.plugin import find_plugin
     pyb_imported = True
 except ImportError:
     pyb_imported = False
 
 from pelican import signals
 from pelican.generators import ArticlesGenerator, PagesGenerator
+from .author_year import LabelStyle
 
 __version__ = '0.0.1'
 
 JUMP_BACK = '<a href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
 CITE_RE = re.compile("\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
 
+class Style(UnsrtStyle):
+    name = 'inline'
+    default_sorting_style = 'author_year_title'
+    default_label_style = 'author_year'
+    
+    def __init__(self, label_style=None, name_style=None, sorting_style=None, abbreviate_names=False, **kwargs):
+        self.name_style = find_plugin('pybtex.style.names', name_style or self.default_name_style)()
+        self.label_style = LabelStyle()
+        self.sorting_style = find_plugin('pybtex.style.sorting', sorting_style or self.default_sorting_style)()
+        self.format_name = self.name_style.format
+        self.format_labels = self.label_style.format_labels
+        self.sort = self.sorting_style.sort
+        self.abbreviate_names = abbreviate_names
+
+
 logger = logging.getLogger(__name__)
 global_bib = None
 if pyb_imported:
-    style = alpha.Style()
+    style = Style()
     backend = html.Backend()
 else:
     style = None
     backend = None
-
 
 def get_bib_file(article):
     """
@@ -92,15 +108,17 @@ def process_content(article):
     for formatted_entry in formatted_entries:
         key = formatted_entry.key
         ref_id = key.replace(' ','')
-        label = ("<a href='#" + ref_id + "' id='#ref-" + ref_id + "-{0}'>"
+        label = ("<a href='#" + ref_id + "' id='ref-" + ref_id + "-{0}'>"
                 + formatted_entry.label + "</a>")
         text = ("<p id='" + ref_id + "'>"
                 + formatted_entry.text.render(backend))
-#        for i in range(cite_count[key]):
-#            if i == 0:
-#                text += JUMP_BACK.format(ref_id,1,'&larrhk;  1')
-#            else:
-#                text += ', ' + JUMP_BACK.format(ref_id,i+1,i+1)
+        for i in range(cite_count[key]):
+            if i == 0:
+                text += JUMP_BACK.format(ref_id,1,'&larrhk;')
+                if cite_count[key] > 1:
+                    text += JUMP_BACK.format(ref_id,1,'<sup>1</sup>')
+            else:
+                text += JUMP_BACK.format(ref_id,i+1,'<sup>'+str(i+1)+'</sup>')
         text += '</p>'
         content += text + '\n'
         labels[key] = label
@@ -110,15 +128,20 @@ def process_content(article):
     def replace_cites(match):
         label = match.group(2)
         if label in labels:
-            # TODO: Add ability to change style of label depending on @ or @@
             if label not in cite_count:
                 cite_count[label] = 1
                 replace_count[label] = 1
             else:
                 cite_count[label] += 1
-            return labels[label].format(cite_count[label])
+            lab = labels[label].format(cite_count[label])
+            if '&#64;&#64;' in match.group():
+                return lab
+            else:
+                m = re.search(">\s*\(\s*(.*?),\s*([0-9]+.*?)\s*\)\s*<",lab)
+                lab = lab[0:m.start()] + '>' + m.group(1) + ' (' + m.group(2) + ')<' + lab[m.end():]
+                return lab
         else:
-            logger.warn('No BibTeX entry found for label "{}"'.format(label))
+            logger.warn('No BibTeX entry found for key "{}"'.format(label))
             return match.group(0)
     
     content = CITE_RE.sub(replace_cites,content)
