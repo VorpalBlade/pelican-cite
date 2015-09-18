@@ -11,6 +11,7 @@ Based on teh Pelican BibTeX plugin written by Vlad Niculae <vlad@vene.ro>
 
 import logging
 import re
+import sys
 
 try:
     from pybtex.database.input.bibtex import Parser
@@ -27,7 +28,11 @@ from pelican import signals
 from pelican.generators import ArticlesGenerator, PagesGenerator
 from .author_year import LabelStyle
 
-__version__ = '0.0.1'
+if sys.version_info[0] < 3:
+    reload(sys)  
+    sys.setdefaultencoding('utf8')
+
+__version__ = '0.2.0'
 
 JUMP_BACK = '<a href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
 CITE_RE = re.compile("\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
@@ -84,6 +89,7 @@ def process_content(article):
     if not data:
         return
     content = article._content
+    content = content.replace("@","&#64;")
 
     # Scan post to figure out what citations are needed
     cite_count = {}
@@ -114,11 +120,11 @@ def process_content(article):
                 + formatted_entry.text.render(backend))
         for i in range(cite_count[key]):
             if i == 0:
-                text += JUMP_BACK.format(ref_id,1,'&larrhk;')
+                text += ' ' + JUMP_BACK.format(ref_id,1,'↩')
                 if cite_count[key] > 1:
-                    text += JUMP_BACK.format(ref_id,1,'<sup>1</sup>')
+                    text += JUMP_BACK.format(ref_id,1,' <sup>1</sup> ')
             else:
-                text += JUMP_BACK.format(ref_id,i+1,'<sup>'+str(i+1)+'</sup>')
+                text += JUMP_BACK.format(ref_id,i+1,'<sup>'+str(i+1)+'</sup> ')
         text += '</p>'
         content += text + '\n'
         labels[key] = label
