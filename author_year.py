@@ -78,9 +78,9 @@ class LabelStyle(BaseLabelStyle):
         else:
             label = self.author_key_label(entry)
         if "year" in entry.fields:
-            return label + ', ' +  entry.fields["year"]
+            return label.strip() + ', ' +  entry.fields["year"]
         else:
-            return label
+            return label.strip()
         # bst additionally sets sort.label
 
     def author_key_label(self, entry):
