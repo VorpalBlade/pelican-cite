@@ -34,7 +34,7 @@ if sys.version_info[0] < 3:
 
 __version__ = '0.2.0'
 
-JUMP_BACK = '<a href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
+JUMP_BACK = '<a class="cite-backref" href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
 CITE_RE = re.compile("\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
 
 class Style(UnsrtStyle):
