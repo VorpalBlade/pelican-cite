@@ -116,8 +116,12 @@ def process_content(article):
         ref_id = key.replace(' ','')
         label = ("<a href='#" + ref_id + "' id='ref-" + ref_id + "-{0}'>"
                 + formatted_entry.label + "</a>")
-        text = ("<p id='" + ref_id + "'>"
-                + formatted_entry.text.render(backend))
+        t = formatted_entry.text.render(backend)
+        t = t.replace('\\{', '&#123;')
+        t = t.replace('\\}', '&#125;')
+        t = t.replace('{', '')
+        t = t.replace('}', '')
+        text = ("<p id='" + ref_id + "'>" + t)
         for i in range(cite_count[key]):
             if i == 0:
                 text += ' ' + JUMP_BACK.format(ref_id,1,'↩')
@@ -143,7 +147,7 @@ def process_content(article):
             if '&#64;&#64;' in match.group():
                 return lab
             else:
-                m = re.search(">\s*\(\s*(.*?),\s*([0-9]+.*?)\s*\)\s*<",lab)
+                m = re.search(">\s*\(\s*(.*?),\s*(.*?)\s*\)\s*<",lab)
                 lab = lab[0:m.start()] + '>' + m.group(1) + ' (' + m.group(2) + ')<' + lab[m.end():]
                 return lab
         else:

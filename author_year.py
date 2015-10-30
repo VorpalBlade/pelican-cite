@@ -58,6 +58,10 @@ class LabelStyle(BaseLabelStyle):
         count = Counter(labels)
         counted = Counter()
         for label in labels:
+            label = label.replace('\\{', '&#123;')
+            label = label.replace('\\}', '&#125;')
+            label = label.replace('{', '')
+            label = label.replace('}', '')
             if count[label] == 1:
                 yield '(' + label + ')'
             else:
@@ -87,10 +91,10 @@ class LabelStyle(BaseLabelStyle):
         # see alpha.bst author.key.label
         if not "author" in entry.persons:
             if not "key" in entry.fields:
-                return entry.key[:3] # entry.key is bst cite$
+                return entry.key[:] # entry.key is bst cite$
             else:
                 # for entry.key, bst actually uses text.prefix$
-                return entry.fields["key"][:3]
+                return entry.fields["key"][:]
         else:
             return self.format_lab_names(entry.persons["author"])
 
@@ -99,10 +103,10 @@ class LabelStyle(BaseLabelStyle):
         if not "author" in entry.persons:
             if not "editor" in entry.persons:
                 if not "key" in entry.fields:
-                    return entry.key[:3] # entry.key is bst cite$
+                    return entry.key[:] # entry.key is bst cite$
                 else:
                     # for entry.key, bst actually uses text.prefix$
-                    return entry.fields["key"][:3]
+                    return entry.fields["key"][:]
             else:
                 return self.format_lab_names(entry.persons["editor"])
         else:
@@ -112,14 +116,14 @@ class LabelStyle(BaseLabelStyle):
         if not "author" in entry.persons:
             if not "key" in entry.fields:
                 if not "organization" in entry.fields:
-                    return entry.key[:3] # entry.key is bst cite$
+                    return entry.key[:] # entry.key is bst cite$
                 else:
                     result = entry.fields["organization"]
                     if result.startswith("The "):
                         result = result[4:]
                     return result
             else:
-                return entry.fields["key"][:3]
+                return entry.fields["key"][:]
         else:
             return self.format_lab_names(entry.persons["author"])
 
@@ -127,14 +131,14 @@ class LabelStyle(BaseLabelStyle):
         if not "editor" in entry.persons:
             if not "key" in entry.fields:
                 if not "organization" in entry.fields:
-                    return entry.key[:3] # entry.key is bst cite$
+                    return entry.key[:] # entry.key is bst cite$
                 else:
                     result = entry.fields["organization"]
                     if result.startswith("The "):
                         result = result[4:]
                     return result
             else:
-                return entry.fields["key"][:3]
+                return entry.fields["key"][:]
         else:
             return self.format_lab_names(entry.persons["editor"])
 
@@ -156,10 +160,10 @@ class LabelStyle(BaseLabelStyle):
                         result += "et al. "
                     else:
                         result += _strip_nonalnum(
-                            person.prelast(abbr=True) + [' '] + person.last(abbr=True))
+                            person.prelast(abbr=True) + [' '] + person.last())
                 else:
                     result += _strip_nonalnum(
-                        person.prelast(abbr=True) + [' '] + person.last(abbr=True))
+                        person.prelast(abbr=True) + [' '] + person.last())
                 if numnames == 2 and nameptr == 1:
                     result += ' and '
                 else:
@@ -171,7 +175,5 @@ class LabelStyle(BaseLabelStyle):
         else:
             person = persons[0]
             result = _strip_nonalnum(
-                person.prelast(abbr=True) + [' '] + person.last(abbr=True))
-            if len(result) < 2:
-                result = _strip_nonalnum(person.last(abbr=False))[:3]
+                person.prelast(abbr=True) + [' '] + person.last())
         return result
