@@ -34,6 +34,9 @@ would be replaced by "(Bai & Stone, 2011)".
 If a citation key is used which does not exist within the BibTeX file then
 a warning will be displayed.
 
+The BibTeX file may, optionally, be provided or overridden on a per-article
+basis by supplying the meta-data `publications_src`.
+
 Attribution
 ===========
 `pelican-cite` is based on the
