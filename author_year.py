@@ -55,14 +55,15 @@ class LabelStyle(BaseLabelStyle):
 
     def format_labels(self, sorted_entries):
         labels = [self.format_label(entry) for entry in sorted_entries]
+        for i in range(len(labels)):
+            labels[i] = labels[i].replace('\\{', '&#123;')
+            labels[i] = labels[i].replace('\\}', '&#125;')
+            labels[i] = labels[i].replace('{', '')
+            labels[i] = labels[i].replace('}', '')
         count = Counter(labels)
         counted = Counter()
         for label in labels:
-            label = label.replace('\\{', '&#123;')
-            label = label.replace('\\}', '&#125;')
-            label = label.replace('{', '')
-            label = label.replace('}', '')
-            if count[label] == 1:
+            if count[label]:
                 yield '(' + label + ')'
             else:
                 yield '(' + label + chr(ord('a') + counted[label]) + ')'
