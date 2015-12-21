@@ -34,6 +34,10 @@ import unicodedata
 
 from pybtex.style.labels import BaseLabelStyle
 
+import sys
+if (sys.version_info[0]>2):
+    unicode = str
+
 _nonalnum_pattern = re.compile('[^\w]+', re.UNICODE)
 
 def _strip_accents(s):
