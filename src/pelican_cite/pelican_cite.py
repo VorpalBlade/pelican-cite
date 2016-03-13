@@ -18,7 +18,11 @@ try:
     from pybtex.database.output.bibtex import Writer
     from pybtex.database import BibliographyData, PybtexError, Entry
     from pybtex.backends import html
-    from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+    from pybtex.style.formatting import toplevel
+    from pybtex.style.formatting.unsrt import dashify, Style as UnsrtStyle
+    from pybtex.style.template import (
+        join, words, field, optional, first_of, sentence, tag, optional_field,
+        )
     from pybtex.plugin import find_plugin
 
     pyb_imported = True
@@ -50,6 +54,37 @@ class Style(UnsrtStyle):
         self.format_labels = self.label_style.format_labels
         self.sort = self.sorting_style.sort
         self.abbreviate_names = abbreviate_names
+
+    def format_article(self, e):
+        pages = field('pages', apply_func=dashify)
+        date = words [optional_field('month'), field('year')]
+        volume_and_pages = first_of [
+            # volume and pages, with optional issue number
+            optional [
+                join [
+                    field('volume'),
+                    optional['(', field('number'),')'],
+                    ':', pages
+                ],
+            ],
+            # pages only
+            words ['pages', pages],
+        ]
+        template = toplevel [
+            self.format_names('author'),
+            self.format_title(e, 'title'),
+            sentence [
+                tag('em') [ first_of [
+                    optional [ field('journal') ],
+                    optional [ field('journaltitle') ],
+                    ],
+                ],
+                optional[ volume_and_pages ],
+                date],
+            sentence [ optional_field('note') ],
+            self.format_web_refs(e),
+        ]
+        return template.format_data(e)
 
 
 logger = logging.getLogger(__name__)
