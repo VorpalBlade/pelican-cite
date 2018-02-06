@@ -4,7 +4,7 @@ pelican-cite
 ==============
 
 A Pelican plugin that provices a BibTeX-style reference system within
-pelican sites. 
+pelican sites.
 
 Based on teh Pelican BibTeX plugin written by Vlad Niculae <vlad@vene.ro>
 """
@@ -29,7 +29,7 @@ from pelican.generators import ArticlesGenerator, PagesGenerator
 from .author_year import LabelStyle
 
 if sys.version_info[0] < 3:
-    reload(sys)  
+    reload(sys)
     sys.setdefaultencoding('utf8')
 
 __version__ = '0.2.0'
@@ -41,7 +41,7 @@ class Style(UnsrtStyle):
     name = 'inline'
     default_sorting_style = 'author_year_title'
     default_label_style = 'author_year'
-    
+
     def __init__(self, label_style=None, name_style=None, sorting_style=None, abbreviate_names=False, **kwargs):
         self.name_style = find_plugin('pybtex.style.names', name_style or self.default_name_style)()
         self.label_style = LabelStyle()
@@ -153,10 +153,10 @@ def process_content(article):
         else:
             logger.warn('No BibTeX entry found for key "{}"'.format(label))
             return match.group(0)
-    
+
     content = CITE_RE.sub(replace_cites,content)
     article._content = content
-    
+
 
 def add_citations(generators):
     global global_bib
@@ -176,7 +176,9 @@ def add_citations(generators):
     # Process the articles and pages
     for generator in generators:
         if isinstance(generator, ArticlesGenerator):
-            for article in generator.articles:
+            for article in (generator.articles +
+                            generator.translations +
+                            generator.drafts):
                 process_content(article)
         elif isinstance(generator, PagesGenerator):
             for page in generator.pages:
