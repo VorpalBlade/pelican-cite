@@ -25,7 +25,7 @@ except ImportError:
     pyb_imported = False
 
 from pelican import signals
-from pelican.generators import ArticlesGenerator, PagesGenerator
+from pelican.contents import Static
 from .author_year import LabelStyle
 
 if sys.version_info[0] < 3:
@@ -174,14 +174,26 @@ def process_content(article):
     article._content = content
 
 
-def add_citations(generators):
+def add_citations(content):
+    if isinstance(content, Static):
+        return
+
     global global_bib
     if not pyb_imported:
         logger.warn('`pelican-cite` failed to load dependency `pybtex`')
         return
 
-    if 'PUBLICATIONS_SRC' in generators[0].settings:
-        refs_file = generators[0].settings['PUBLICATIONS_SRC']
+    process_content(content)
+
+
+def init(pelican_instance):
+    global global_bib
+    if not pyb_imported:
+        logger.warn('`pelican-cite` failed to load dependency `pybtex`')
+        return
+
+    if 'PUBLICATIONS_SRC' in pelican_instance.settings:
+        refs_file = pelican_instance.settings['PUBLICATIONS_SRC']
         try:
             global_bib = Parser().parse_file(refs_file)
         except PybtexError as e:
@@ -189,17 +201,7 @@ def add_citations(generators):
                 refs_file,
                 str(e)))
 
-    # Process the articles and pages
-    for generator in generators:
-        if isinstance(generator, ArticlesGenerator):
-            for article in (generator.articles +
-                            generator.translations +
-                            generator.drafts):
-                process_content(article)
-        elif isinstance(generator, PagesGenerator):
-            for page in generator.pages:
-                process_content(page)
-
 
 def register():
-    signals.all_generators_finalized.connect(add_citations)
+    signals.initialized.connect(init)
+    signals.content_object_init.connect(add_citations)
