@@ -37,6 +37,7 @@ __version__ = '0.2.0'
 JUMP_BACK = '<a class="cite-backref" href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
 CITE_RE = re.compile(r"\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
 DATE_RE = re.compile(r"(?P<y>\d{4})(?:-(?P<m>\d{1,2})(?:-(?P<d>\d{1,2}))?)?")
+CITE_2_RE = re.compile(r">\s*\(\s*(.*?),\s*(.*?)\s*\)\s*<")
 
 
 class Style(UnsrtStyle):
@@ -62,6 +63,7 @@ if pyb_imported:
 else:
     style = None
     backend = None
+
 
 def get_bib_file(article):
     """
@@ -148,6 +150,7 @@ def process_content(article):
 
     # Replace citations in article/page
     cite_count = {}
+
     def replace_cites(match):
         label = match.group(2)
         if label in labels:
@@ -160,7 +163,7 @@ def process_content(article):
             if '&#64;&#64;' in match.group():
                 return lab
             else:
-                m = re.search(">\s*\(\s*(.*?),\s*(.*?)\s*\)\s*<",lab)
+                m = CITE_2_RE.search(lab)
                 lab = lab[0:m.start()] + '>' + m.group(1) + ' (' + m.group(2) + ')<' + lab[m.end():]
                 return lab
         else:
