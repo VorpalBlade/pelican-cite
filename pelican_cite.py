@@ -57,6 +57,8 @@ class Style(UnsrtStyle):
 
 logger = logging.getLogger(__name__)
 global_bib = None
+bibliography_start = '<hr>\n<h2>Bibliography</h2>\n'
+bibliography_end = ''
 if pyb_imported:
     style = Style()
     backend = html.Backend()
@@ -125,7 +127,7 @@ def process_content(article):
 
     # Get the data for the required citations and append to content
     labels = {}
-    content += '<hr>\n<h2>Bibliography</h2>\n'
+    content += bibliography_start
     for formatted_entry in formatted_entries:
         key = formatted_entry.key
         ref_id = key.replace(' ','')
@@ -147,6 +149,8 @@ def process_content(article):
         text += '</p>'
         content += text + '\n'
         labels[key] = label
+
+    content += bibliography_end
 
     # Replace citations in article/page
     cite_count = {}
@@ -191,6 +195,11 @@ def init(pelican_instance):
     if not pyb_imported:
         logger.warn('`pelican-cite` failed to load dependency `pybtex`')
         return
+
+    if 'BIBLIOGRAPHY_START' in pelican_instance.settings:
+        bibliography_start = pelican_instance.settings['BIBLIOGRAPHY_START']
+    if 'BIBLIOGRAPHY_END' in pelican_instance.settings:
+        bibliography_end = pelican_instance.settings['BIBLIOGRAPHY_END']
 
     if 'PUBLICATIONS_SRC' in pelican_instance.settings:
         refs_file = pelican_instance.settings['PUBLICATIONS_SRC']
