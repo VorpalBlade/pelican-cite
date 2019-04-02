@@ -163,7 +163,7 @@ def process_content(article):
 
 
 def add_citations(generators):
-    global global_bib
+    global global_bib, bibliography_start, bibliography_end
     if not pyb_imported:
         logger.warn('`pelican-cite` failed to load dependency `pybtex`')
         return
