@@ -16,7 +16,7 @@ import sys
 try:
     from pybtex.database.input.bibtex import Parser
     from pybtex.database.output.bibtex import Writer
-    from pybtex.database import BibliographyData, PybtexError
+    from pybtex.database import BibliographyData, PybtexError, Entry
     from pybtex.backends import html
     from pybtex.style.formatting.unsrt import Style as UnsrtStyle
     from pybtex.plugin import find_plugin
@@ -35,7 +35,9 @@ if sys.version_info[0] < 3:
 __version__ = '0.2.0'
 
 JUMP_BACK = '<a class="cite-backref" href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
-CITE_RE = re.compile("\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
+CITE_RE = re.compile(r"\[&#64;(&#64;)?\s*(\w.*?)\s*\]")
+DATE_RE = re.compile(r"(?P<y>\d{4})(?:-(?P<m>\d{1,2})(?:-(?P<d>\d{1,2}))?)?")
+
 
 class Style(UnsrtStyle):
     name = 'inline'
@@ -106,6 +108,17 @@ def process_content(article):
     for key in data.entries.keys():
         if key in cite_count: cited.append(data.entries[key])
     if len(cited) == 0: return
+    for entry in cited:  # type: Entry
+        if 'year' not in entry.fields and 'date' in entry.fields:
+            date_parse = DATE_RE.match(entry.fields['date'])
+            if date_parse:
+                groups = date_parse.groupdict()
+                if groups['y']:
+                    entry.fields['year'] = groups['y']
+                if groups['m']:
+                    entry.fields['month'] = groups['m']
+                if groups['d']:
+                    entry.fields['day'] = groups['d']
     formatted_entries = style.format_entries(cited)
 
     # Get the data for the required citations and append to content
