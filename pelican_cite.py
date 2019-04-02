@@ -191,7 +191,7 @@ def add_citations(content):
 
 
 def init(pelican_instance):
-    global global_bib
+    global global_bib, bibliography_start, bibliography_end
     if not pyb_imported:
         logger.warn('`pelican-cite` failed to load dependency `pybtex`')
         return
