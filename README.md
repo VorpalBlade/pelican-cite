@@ -37,6 +37,14 @@ a warning will be displayed.
 The BibTeX file may, optionally, be provided or overridden on a per-article
 basis by supplying the meta-data `publications_src`.
 
+The HTML code for the start and of the bibliography section can be replaced via
+setting `BIBLIOGRAPHY_START` and `BIBLIOGRAPHY_END`. For example: 
+
+```python
+BIBLIOGRAPHY_START = '<section id="bib"><h1>My awesome bibliography</h1>'
+BIBLIOGRAPHY_END = '</section>' 
+``` 
+
 Attribution
 ===========
 `pelican-cite` is based on the
