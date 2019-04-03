@@ -112,7 +112,11 @@ def process_content(article):
     for key in data.entries.keys():
         if key in cite_count: cited.append(data.entries[key])
     if len(cited) == 0: return
+
+    # Patch entries, adding missing things to workaround style expecting fields
+    # that are not there
     for entry in cited:  # type: Entry
+        # Zotero at least exports with "date" instead of separate "year" etc.
         if 'year' not in entry.fields and 'date' in entry.fields:
             date_parse = DATE_RE.match(entry.fields['date'])
             if date_parse:
@@ -123,6 +127,9 @@ def process_content(article):
                     entry.fields['month'] = groups['m']
                 if groups['d']:
                     entry.fields['day'] = groups['d']
+        # Sometimes "journaltitle" is used instead
+        if 'journal' not in entry.fields and 'journaltitle' in entry.fields:
+            entry.fields['journal'] = entry.fields['journaltitle']
     formatted_entries = style.format_entries(cited)
 
     # Get the data for the required citations and append to content
