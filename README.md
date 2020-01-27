@@ -37,7 +37,7 @@ a warning will be displayed.
 The BibTeX file may, optionally, be provided or overridden on a per-article
 basis by supplying the meta-data `publications_src`.
 
-The HTML code for the start and of the bibliography section can be replaced via
+The HTML code for the start and end of the bibliography section can be replaced via
 setting `BIBLIOGRAPHY_START` and `BIBLIOGRAPHY_END`. For example: 
 
 ```python
