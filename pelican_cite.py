@@ -20,6 +20,7 @@ try:
     from pybtex.backends import html
     from pybtex.style.formatting.unsrt import Style as UnsrtStyle
     from pybtex.plugin import find_plugin
+
     pyb_imported = True
 except ImportError:
     pyb_imported = False
@@ -78,7 +79,7 @@ def get_bib_file(article):
             local_bib = Parser().parse_file(refs_file)
             return local_bib
         except PybtexError as e:
-            logger.warn('`pelican_bibtex` failed to parse file %s: %s' % (
+            logger.warning('`pelican_bibtex` failed to parse file %s: %s' % (
                 refs_file,
                 str(e)))
             return global_bib
@@ -95,7 +96,7 @@ def process_content(article):
     if not data:
         return
     content = article._content
-    content = content.replace("@","&#64;")
+    content = content.replace("@", "&#64;")
 
     # Scan post to figure out what citations are needed
     cite_count = {}
@@ -110,8 +111,10 @@ def process_content(article):
     # Get formatted entries for the appropriate bibliographic entries
     cited = []
     for key in data.entries.keys():
-        if key in cite_count: cited.append(data.entries[key])
-    if len(cited) == 0: return
+        if key in cite_count:
+            cited.append(data.entries[key])
+    if len(cited) == 0:
+        return
 
     # Patch entries, adding missing things to workaround style expecting fields
     # that are not there
@@ -137,9 +140,9 @@ def process_content(article):
     content += bibliography_start
     for formatted_entry in formatted_entries:
         key = formatted_entry.key
-        ref_id = key.replace(' ','')
+        ref_id = key.replace(' ', '')
         label = ("<a href='#" + ref_id + "' id='ref-" + ref_id + "-{0}'>"
-                + formatted_entry.label + "</a>")
+                 + formatted_entry.label + "</a>")
         t = formatted_entry.text.render(backend)
         t = t.replace('\\{', '&#123;')
         t = t.replace('\\}', '&#125;')
@@ -148,11 +151,11 @@ def process_content(article):
         text = ("<p id='" + ref_id + "'>" + t)
         for i in range(cite_count[key]):
             if i == 0:
-                text += ' ' + JUMP_BACK.format(ref_id,1,'↩')
+                text += ' ' + JUMP_BACK.format(ref_id, 1, '↩')
                 if cite_count[key] > 1:
-                    text += JUMP_BACK.format(ref_id,1,' <sup>1</sup> ')
+                    text += JUMP_BACK.format(ref_id, 1, ' <sup>1</sup> ')
             else:
-                text += JUMP_BACK.format(ref_id,i+1,'<sup>'+str(i+1)+'</sup> ')
+                text += JUMP_BACK.format(ref_id, i + 1, '<sup>' + str(i + 1) + '</sup> ')
         text += '</p>'
         content += text + '\n'
         labels[key] = label
@@ -178,10 +181,10 @@ def process_content(article):
                 lab = lab[0:m.start()] + '>' + m.group(1) + ' (' + m.group(2) + ')<' + lab[m.end():]
                 return lab
         else:
-            logger.warn('No BibTeX entry found for key "{}"'.format(label))
+            logger.warning('No BibTeX entry found for key "{}"'.format(label))
             return match.group(0)
 
-    content = CITE_RE.sub(replace_cites,content)
+    content = CITE_RE.sub(replace_cites, content)
     article._content = content
 
 
@@ -191,7 +194,7 @@ def add_citations(content):
 
     global global_bib
     if not pyb_imported:
-        logger.warn('`pelican-cite` failed to load dependency `pybtex`')
+        logger.warning('`pelican-cite` failed to load dependency `pybtex`')
         return
 
     process_content(content)
@@ -200,7 +203,7 @@ def add_citations(content):
 def init(pelican_instance):
     global global_bib, bibliography_start, bibliography_end
     if not pyb_imported:
-        logger.warn('`pelican-cite` failed to load dependency `pybtex`')
+        logger.warning('`pelican-cite` failed to load dependency `pybtex`')
         return
 
     if 'BIBLIOGRAPHY_START' in pelican_instance.settings:
@@ -213,7 +216,7 @@ def init(pelican_instance):
         try:
             global_bib = Parser().parse_file(refs_file)
         except PybtexError as e:
-            logger.warn('`pelican_bibtex` failed to parse file %s: %s' % (
+            logger.warning('`pelican_bibtex` failed to parse file %s: %s' % (
                 refs_file,
                 str(e)))
 

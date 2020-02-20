@@ -27,24 +27,24 @@ modified from the alpha style built into Pybtex, written by
 Andrey Golovizin.
 """
 
-from collections import Counter
 import re
-import string
+import sys
 import unicodedata
-
+from collections import Counter
 from pybtex.style.labels import BaseLabelStyle
 from pybtex.textutils import abbreviate
 
-import sys
-if (sys.version_info[0]>2):
+if sys.version_info[0] > 2:
     unicode = str
 
-_nonalnum_pattern = re.compile('[^\w]+', re.UNICODE)
+_nonalnum_pattern = re.compile(r'[^\w]+', re.UNICODE)
+
 
 def _strip_accents(s):
-   return u''.join(
-       (c for c in unicodedata.normalize('NFD', s)
-        if not unicodedata.combining(c)))
+    return u''.join(
+        (c for c in unicodedata.normalize('NFD', s)
+         if not unicodedata.combining(c)))
+
 
 def _strip_nonalnum(parts):
     """Strip all non-alphanumerical characters from a list of strings.
@@ -54,6 +54,7 @@ def _strip_nonalnum(parts):
     """
     s = u''.join(parts)
     return _nonalnum_pattern.sub(u'', s)
+
 
 class LabelStyle(BaseLabelStyle):
     name = 'alpha'
@@ -88,16 +89,16 @@ class LabelStyle(BaseLabelStyle):
         else:
             label = self.author_key_label(entry)
         if "year" in entry.fields:
-            return label.strip() + ', ' +  entry.fields["year"]
+            return label.strip() + ', ' + entry.fields["year"]
         else:
             return label.strip()
         # bst additionally sets sort.label
 
     def author_key_label(self, entry):
         # see alpha.bst author.key.label
-        if not "author" in entry.persons:
-            if not "key" in entry.fields:
-                return entry.key[:] # entry.key is bst cite$
+        if "author" not in entry.persons:
+            if "key" not in entry.fields:
+                return entry.key[:]  # entry.key is bst cite$
             else:
                 # for entry.key, bst actually uses text.prefix$
                 return entry.fields["key"][:]
@@ -106,10 +107,10 @@ class LabelStyle(BaseLabelStyle):
 
     def author_editor_key_label(self, entry):
         # see alpha.bst author.editor.key.label
-        if not "author" in entry.persons:
-            if not "editor" in entry.persons:
-                if not "key" in entry.fields:
-                    return entry.key[:] # entry.key is bst cite$
+        if "author" not in entry.persons:
+            if "editor" not in entry.persons:
+                if "key" not in entry.fields:
+                    return entry.key[:]  # entry.key is bst cite$
                 else:
                     # for entry.key, bst actually uses text.prefix$
                     return entry.fields["key"][:]
@@ -119,10 +120,10 @@ class LabelStyle(BaseLabelStyle):
             return self.format_lab_names(entry.persons["author"])
 
     def author_key_organization_label(self, entry):
-        if not "author" in entry.persons:
-            if not "key" in entry.fields:
-                if not "organization" in entry.fields:
-                    return entry.key[:] # entry.key is bst cite$
+        if "author" not in entry.persons:
+            if "key" not in entry.fields:
+                if "organization" not in entry.fields:
+                    return entry.key[:]  # entry.key is bst cite$
                 else:
                     result = entry.fields["organization"]
                     if result.startswith("The "):
@@ -134,10 +135,10 @@ class LabelStyle(BaseLabelStyle):
             return self.format_lab_names(entry.persons["author"])
 
     def editor_key_organization_label(self, entry):
-        if not "editor" in entry.persons:
-            if not "key" in entry.fields:
-                if not "organization" in entry.fields:
-                    return entry.key[:] # entry.key is bst cite$
+        if "editor" not in entry.persons:
+            if "key" not in entry.fields:
+                if "organization" not in entry.fields:
+                    return entry.key[:]  # entry.key is bst cite$
                 else:
                     result = entry.fields["organization"]
                     if result.startswith("The "):
@@ -148,7 +149,8 @@ class LabelStyle(BaseLabelStyle):
         else:
             return self.format_lab_names(entry.persons["editor"])
 
-    def format_lab_names(self, persons):
+    @staticmethod
+    def format_lab_names(persons):
         # see alpha.bst format.lab.names
         # s = persons
         numnames = len(persons)
