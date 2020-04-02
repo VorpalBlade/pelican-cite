@@ -29,11 +29,7 @@ from pelican import signals
 from pelican.contents import Static
 from .author_year import LabelStyle
 
-if sys.version_info[0] < 3:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
-__version__ = '0.2.0'
+__version__ = '1.0.0'
 
 JUMP_BACK = '<a class="cite-backref" href="#ref-{0}-{1}" title="Jump back to reference {1}">{2}</a>'
 CITE_RE = re.compile(r"\[&#64;(&#64;)?\s*(\w.*?)\s*\]")

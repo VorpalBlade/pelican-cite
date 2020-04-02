@@ -34,9 +34,6 @@ from collections import Counter
 from pybtex.style.labels import BaseLabelStyle
 from pybtex.textutils import abbreviate
 
-if sys.version_info[0] > 2:
-    unicode = str
-
 _nonalnum_pattern = re.compile(r'[^\w]+', re.UNICODE)
 
 
@@ -164,7 +161,7 @@ class LabelStyle(BaseLabelStyle):
             while namesleft:
                 person = persons[nameptr - 1]
                 if nameptr == numnames:
-                    if unicode(person) == "others":
+                    if str(person) == "others":
                         result += "et al. "
                     else:
                         result += _strip_nonalnum(
