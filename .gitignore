@@ -1,5 +1,12 @@
 *.pyc
+*.pyo
 *.swp
+*\.egg-info/
 *~
+.coverage*
+\.eggs/
+__pycache__
+build/
+dist/
 papers.bib
 test-blog

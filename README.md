@@ -3,10 +3,22 @@ pelican-cite
 
 Allows the use of BibTeX citations within a Pelican site. 
 
-Requirements
-============
+## Installation
 
-`pelican-cite` requires `pybtex`.
+The easiest option is to install via pip from PyPI:
+
+```bash
+pip install pelican_cite
+```
+
+It is also possible to simply clone the git repository and put it in a directory
+listed in ``PLUGIN_PATHS`` in your ``pelicanconf.py``:
+
+```bash
+git clone https://github.com/VorpalBlade/pelican-cite.git
+```
+
+Note that in this case you will have to install the dependencies yourself as well:
 
 ```bash
 pip install pybtex
@@ -14,6 +26,8 @@ pip install pybtex
 
 How to Use
 ==========
+
+Note that when installing with PyPI the plugin name is `pelican_cite` with an underscore, not with a dash.
 
 This plugin reads a user-specified BibTeX file and generates bibliographic
 information within your articles and pages.
