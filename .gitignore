@@ -9,4 +9,5 @@ __pycache__
 build/
 dist/
 papers.bib
+pip-wheel-metadata/
 test-blog
