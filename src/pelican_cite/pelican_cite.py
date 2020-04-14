@@ -22,7 +22,7 @@ try:
     from pybtex.style.formatting.unsrt import dashify, Style as UnsrtStyle
     from pybtex.style.template import (
         join, words, field, optional, first_of, sentence, tag, optional_field,
-        )
+    )
     from pybtex.plugin import find_plugin
 
     pyb_imported = True
@@ -55,36 +55,36 @@ class Style(UnsrtStyle):
         self.sort = self.sorting_style.sort
         self.abbreviate_names = abbreviate_names
 
-    def format_article(self, e):
+    def get_article_template(self, e):
         pages = field('pages', apply_func=dashify)
-        date = words [optional_field('month'), field('year')]
-        volume_and_pages = first_of [
+        date = words[optional_field('month'), field('year')]
+        volume_and_pages = first_of[
             # volume and pages, with optional issue number
-            optional [
-                join [
+            optional[
+                join[
                     field('volume'),
-                    optional['(', field('number'),')'],
+                    optional['(', field('number'), ')'],
                     ':', pages
                 ],
             ],
             # pages only
-            words ['pages', pages],
+            words['pages', pages],
         ]
-        template = toplevel [
+        template = toplevel[
             self.format_names('author'),
             self.format_title(e, 'title'),
-            sentence [
-                tag('em') [ first_of [
-                    optional [ field('journal') ],
-                    optional [ field('journaltitle') ],
-                    ],
+            sentence[
+                tag('em')[first_of[
+                              optional[field('journal')],
+                              optional[field('journaltitle')],
+                          ],
                 ],
-                optional[ volume_and_pages ],
+                optional[volume_and_pages],
                 date],
-            sentence [ optional_field('note') ],
+            sentence[optional_field('note')],
             self.format_web_refs(e),
         ]
-        return template.format_data(e)
+        return template
 
 
 logger = logging.getLogger(__name__)
@@ -161,9 +161,6 @@ def process_content(article):
                     entry.fields['month'] = groups['m']
                 if groups['d']:
                     entry.fields['day'] = groups['d']
-        # Sometimes "journaltitle" is used instead
-        if 'journal' not in entry.fields and 'journaltitle' in entry.fields:
-            entry.fields['journal'] = entry.fields['journaltitle']
     formatted_entries = style.format_entries(cited)
 
     # Get the data for the required citations and append to content
